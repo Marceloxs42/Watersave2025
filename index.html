@@ -1,0 +1,435 @@
+// Save the Water with mascota desbloqueable y evoluciones
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Save the Water</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap');
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #c8f4ff, #eafaff);
+      color: #333;
+    }
+    header {
+      background: linear-gradient(to right, #00aaff, #00c6ff);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    header h1 {
+      font-family: 'Bubblegum Sans', cursive;
+      font-size: 2.8rem;
+      margin-bottom: 0.3rem;
+    }
+    header p {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    #retos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .casillero {
+  box-shadow: inset 0 0 0 1px #224a77, inset 0 -3px 6px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2);
+      background: linear-gradient(to bottom, #4a90e2, #357ABD);
+      background-image: url('https://cdn-icons-png.flaticon.com/512/1042/1042800.png');
+      background-repeat: no-repeat;
+      background-position: center top 10px;
+      background-size: 48px 48px;
+      width: 100%;
+      aspect-ratio: 3 / 5;
+      border: 3px solid #004e8a;
+      border-radius: 12px;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      transition: transform 0.4s ease, box-shadow 0.4s ease, max-height 0.4s ease;
+      pointer-events: none;
+      opacity: 0.4;
+      max-height: 150px;
+    }
+    .casillero.disponible {
+      pointer-events: auto;
+      opacity: 1;
+    }
+    .casillero.activo {
+  transform: scale(1.01, 1.4);
+  box-shadow: 0 0 15px rgba(0, 105, 148, 0.6);
+  z-index: 10;
+  max-height: 1000px;
+}
+      z-index: 10;
+      max-height: 1000px;
+    }
+    .casillero h2 {
+      margin: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      padding: 0.3rem;
+      font-size: 1rem;
+      text-align: center;
+      border-bottom: 2px solid #fff;
+    }
+    .contenido-reto {
+      background: rgba(255, 255, 255, 0.96);
+      color: #222;
+      padding: 0.6rem;
+      font-size: 0.75rem;
+      display: none;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    .casillero.activo .contenido-reto {
+      display: block;
+    }
+    .contenido-reto p {
+      margin: 0.4rem 0;
+    }
+    .contenido-reto label {
+      display: block;
+      margin-top: 0.5rem;
+    }
+    .marcado {
+      background-color: rgba(144, 238, 144, 0.4);
+      border-color: green;
+    }
+    .serpentinas {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      animation: celebrar 1s ease forwards;
+      pointer-events: none;
+    }
+    @keyframes celebrar {
+      0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-40px); opacity: 0; }
+    }
+    #mascota {
+      display: none;
+      text-align: center;
+      padding: 1rem;
+    }
+    #mascota img {
+      max-width: 140px;
+      margin-top: 1rem;
+    }
+    #resumen {
+      text-align: center;
+      padding: 1.5rem;
+      background: linear-gradient(to right, #d1f4ff, #ffffff);
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005f8a;
+    }
+  @keyframes caer {
+  0% { transform: translateY(-100px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes aparecer {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes neonFade {
+  0% {
+    text-shadow: 0 0 2px #00f7ff, 0 0 5px #00f7ff, 0 0 10px #0ff;
+  }
+  100% {
+    text-shadow: 0 0 1px #00f7ff, 0 0 2px #00f7ff, 0 0 4px #0ff;
+  }
+}
+  100% { opacity: 1; transform: scale(1); }
+}
+.etiqueta-dia {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(255,255,255,0.9);
+  color: #000;
+  font-weight: bold;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 8px;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+  z-index: 2;
+  font-family: 'Bubblegum Sans', cursive;
+  animation: aparecer 0.5s ease-in-out;
+}
+
+.casillero.activo {
+  transform: scaleY(1.35) scaleX(1.2) rotateX(0deg);
+  transition: transform 0.6s ease, box-shadow 0.4s ease, max-height 0.6s ease;
+}
+
+.casillero {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.burbuja-agua {
+  position: absolute;
+  bottom: -40px;
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  animation: burbujaSube linear infinite;
+  z-index: 0;
+}
+@keyframes burbujaSube {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-100vh); opacity: 0; }
+}
+</style>
+<audio id="lockerSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_62499cfa94.mp3"></audio>
+</head>
+<body>
+  <div id="pantallaInicio" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom right,#0077b6,#90e0ef), url('https://cdn.pixabay.com/photo/2018/01/15/07/51/water-3085602_1280.jpg');background-size:cover;background-position:center;color:white;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;text-align:center;font-family:'Bubblegum Sans',cursive;overflow:hidden;">
+    <div id="burbujas-container"></div>
+    <h1 style="font-size:3.2rem;margin:0 0 1rem;color:#00f7ff;text-shadow: 0 0 5px #00f7ff, 0 0 10px #00f7ff, 0 0 20px #00f7ff, 0 0 40px #0ff;text-align:center;animation:neonFade 2s ease-in-out infinite alternate, caer 1.2s ease-out forwards;letter-spacing:2px;">Save the Water</h1>
+    <h2 style="font-size:1.9rem;margin-bottom:0.5rem;max-width:90%;animation:caer 1.5s ease-out forwards;color:#f9f871;text-shadow: 1px 1px 6px #000;">Cuidar el agua es un reto. ¿Estás dispuesto a hacerlo?</h2>
+    <p style="font-size:1rem;margin-bottom:1.5rem;color:#ffffffcc;animation:aparecer 2.2s ease-out forwards;"><span style="color:black;">Pequeñas acciones hacen grandes cambios</span></p>
+    <button onclick="iniciarApp()" style="font-size:1.3rem;padding:0.9rem 1.8rem;background:#ff0077;border:none;border-radius:15px;color:white;cursor:pointer;animation:aparecer 2s ease-out forwards;box-shadow: 0 0 10px #ff69b4;">Empezar</button>
+  </div>
+  <header>
+  <h1>Save the Water</h1>
+  <p style="font-family: 'Bubblegum Sans', cursive; font-size: 1.2rem; color: black; text-shadow: 1px 1px 2px #ccc;">Pequeñas acciones, grandes cambios</p>
+  </header>
+
+  <section id="retos"></section>
+
+  <section id="resumen">
+    <h2 style="font-family: 'Bubblegum Sans', cursive; font-size: 1.8rem; color: #0077b6; text-shadow: 1px 1px 2px #a5e2f4;">Litros ahorrados este mes:</h2>
+    <p id="totalAhorrado" style="font-family: 'Bubblegum Sans', cursive; font-size: 1.5rem; color: black; text-shadow: 1px 1px 2px #ccc;">0 litros</p>
+        <p id="rachaDias" style="font-family: 'Bubblegum Sans', cursive; font-size: 1.6rem; color: black; text-shadow: 1px 1px 2px #ccc;">Racha actual: 0 días</p>
+  </section>
+
+  <section id="mascota">
+    <h2 id="mascotaNombre">¡Has desbloqueado a Gotín!</h2>
+    <img id="imgMascota" src="https://cdn-icons-png.flaticon.com/512/984/984196.png" alt="Mascota Gotín">
+    <p>¡Sigue cuidando el agua para ver sus evoluciones!</p>
+  </section>
+
+  <script>
+    // Comprobación automática de fin de mes
+    window.addEventListener('load', () => {
+      const now = new Date();
+      const lastReset = localStorage.getItem('ultimoReset');
+      const currentMonth = now.getMonth();
+      const savedMonth = lastReset ? parseInt(lastReset) : -1;
+      if (savedMonth !== currentMonth) {
+        setTimeout(() => {
+          alert(`¡Has ahorrado ${total} litros de agua este mes! Reiniciando progreso para el nuevo mes.`);
+        }, 800);
+        total = 0;
+        retosCumplidos = 0;
+        diasCumplidos = 0;
+        diaHoy = 1;
+        localStorage.setItem('progresoDia', 1);
+        localStorage.setItem('rachaActual', 0);
+        localStorage.setItem('ultimoReset', currentMonth);
+        localStorage.setItem('totalLitros', 0);
+      document.getElementById('totalAhorrado').textContent = '0 litros';
+        document.getElementById('rachaDias').textContent = 'Racha actual: 0 días';
+        document.querySelectorAll('.casillero').forEach(c => {
+          c.classList.remove('activo', 'marcado', 'disponible');
+          c.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        });
+        document.querySelectorAll('.casillero')[0].classList.add('disponible');
+        mascota.style.display = 'none';
+      }
+    });
+    let total = parseInt(localStorage.getItem('totalLitros')) || 0;
+    let retosCumplidos = 0;
+    let diasCumplidos = parseInt(localStorage.getItem('rachaActual')) || 0;
+    let inicio = parseInt(localStorage.getItem('diaInicio'));
+    if (!inicio || isNaN(inicio)) {
+      inicio = 1;
+      localStorage.setItem('diaInicio', inicio);
+    }
+    let diaHoy = parseInt(localStorage.getItem('progresoDia')) || 1;
+    const mascota = document.getElementById("mascota");
+    const imgMascota = document.getElementById("imgMascota");
+    const mascotaNombre = document.getElementById("mascotaNombre");
+
+    const retos = [
+      "Cierra la ducha mientras te enjabonas.",
+      "Usa un vaso con agua para cepillarte los dientes.",
+      "Reutiliza agua de cocción para regar plantas.",
+      "Lava tu auto con balde en lugar de manguera.",
+      "Repara las fugas de agua en casa.",
+      "Usa la lavadora solo con cargas completas.",
+      "Riega las plantas por la noche para evitar evaporación.",
+      "Reúne agua de lluvia para limpiar pisos.",
+      "Descongela alimentos sin usar agua.",
+      "Utiliza un recipiente para lavar frutas y verduras."
+    ];
+
+    const frases = [
+      "Podrías llenar una pecera mediana.",
+      "Podrías llenar una regadera pequeña.",
+      "Podrías regar dos macetas medianas.",
+      "Podrías llenar una cubeta completa.",
+      "Podrías ducharte una vez más.",
+      "Podrías limpiar todo el piso de casa.",
+      "Podrías lavar una bicicleta.",
+      "Podrías llenar una olla para cocinar.",
+      "Podrías darle agua a tu mascota por una semana.",
+      "Podrías enfriar botellas en un balde."
+    ];
+
+    const contenedor = document.getElementById("retos");
+    for (let i = 0; i < 30; i++) {
+      const casillero = document.createElement("div");
+      casillero.className = "casillero" + (i + 1 === diaHoy ? " disponible" : "");
+      casillero.innerHTML = `<div class='etiqueta-dia'>Día ${i + 1}</div><img class='icono-casillero' src='https://cdn-icons-png.flaticon.com/512/1042/1042800.png' alt='icono casillero' style='position:absolute; bottom:5px; right:5px; width:30px; height:30px;' />`;
+      for (let j = 0; j < 3; j++) {
+        const ahorro = Math.floor(Math.random() * 10 + 5);
+        const reto = retos[(i * 3 + j) % retos.length];
+        const dato = frases[Math.floor(Math.random() * frases.length)];
+        const contenido = document.createElement("div");
+        contenido.className = "contenido-reto";
+        contenido.innerHTML = `
+          <p>${reto}</p>
+          <p><strong>Ahorro estimado:</strong> ${ahorro} litros</p>
+          <p><em>${dato}</em></p>
+          <label><input type="checkbox" onchange="marcarReto(this, ${ahorro})"> Marcar como cumplido</label>
+        `;
+        casillero.appendChild(contenido);
+      }
+      casillero.addEventListener('click', function (e) {
+  if (!e.target.matches('input') && casillero.classList.contains('disponible')) {
+    document.querySelectorAll('.casillero.activo').forEach(c => {
+      if (c !== casillero) c.classList.remove('activo');
+    });
+    casillero.classList.toggle("activo");
+    const icono = casillero.querySelector('.icono-casillero');
+    if (casillero.classList.contains("activo")) {
+      icono.src = "https://cdn-icons-png.flaticon.com/512/1146/1146841.png";
+    } else {
+      icono.src = "https://cdn-icons-png.flaticon.com/512/1042/1042800.png";
+    }
+    const sound = document.getElementById('lockerSound');
+    if (sound) {
+      sound.currentTime = 0;
+      sound.play();
+    }
+  }
+});
+      contenedor.appendChild(casillero);
+    }
+
+    function marcarReto(checkbox, ahorro) {
+      const casillero = checkbox.closest(".casillero");
+      if (checkbox.checked) {
+        casillero.classList.add("marcado");
+        total += ahorro;
+        retosCumplidos++;
+        const sparkle = document.createElement("div");
+        sparkle.className = "serpentinas";
+        sparkle.textContent = "🎉";
+        casillero.appendChild(sparkle);
+        setTimeout(() => { sparkle.remove(); }, 1000);
+        if (retosCumplidos % 3 === 0) {
+  diasCumplidos++;
+  diaHoy++;
+  localStorage.setItem('progresoDia', diaHoy);
+  localStorage.setItem('rachaActual', diasCumplidos);
+  document.getElementById('rachaDias').textContent = `Racha actual: ${diasCumplidos} días`;
+  casillero.style.backgroundColor = '#c8fadc';
+  const sparkle = document.createElement("div");
+  sparkle.className = "serpentinas";
+  sparkle.textContent = "🎉";
+  casillero.appendChild(sparkle);
+  setTimeout(() => { sparkle.remove(); }, 1500);
+}
+        actualizarMascota();
+      } else {
+        casillero.classList.remove("marcado");
+        total -= ahorro;
+        if (retosCumplidos % 3 === 0 && diasCumplidos > 0) diasCumplidos--;
+        retosCumplidos = Math.max(0, retosCumplidos - 1);
+        actualizarMascota();
+      }
+      document.getElementById('totalAhorrado').textContent = `${total} litros`;
+      localStorage.setItem('totalLitros', total);
+      document.getElementById('rachaDias').textContent = `Racha actual: ${diasCumplidos} días`;
+    }
+
+    function actualizarMascota() {
+      if (diasCumplidos >= 30) {
+        mascota.style.display = "block";
+        mascotaNombre.textContent = "¡Gotín Evolucionado Ultra!";
+        imgMascota.src = "file-6yabRnyJTrLcTkAsX63mED";
+      } else if (diasCumplidos >= 10) {
+        mascota.style.display = "block";
+        mascotaNombre.textContent = "¡Gotín Evolucionado!";
+        imgMascota.src = "file-6yabRnyJTrLcTkAsX63mED";
+      } else if (diasCumplidos > 0) {
+        mascota.style.display = "block";
+        mascotaNombre.textContent = "¡Has desbloqueado a Gotín!";
+        imgMascota.src = "file-6yabRnyJTrLcTkAsX63mED";
+      } else {
+        mascota.style.display = "none";
+      }
+    }
+
+    function resetear() {
+      total = 0;
+      retosCumplidos = 0;
+      diasCumplidos = 0;
+      localStorage.removeItem('rachaActual');
+      document.getElementById('totalAhorrado').textContent = '0 litros';
+      document.getElementById('rachaDias').textContent = 'Racha actual: 0 días';
+      mascota.style.display = "none";
+      document.querySelectorAll('.casillero').forEach((casillero) => {
+        casillero.classList.remove('activo', 'marcado');
+        casillero.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+      });
+    }
+  function iniciarApp() {
+  const pantalla = document.getElementById('pantallaInicio');
+  pantalla.style.transition = 'opacity 1s ease';
+  pantalla.style.opacity = '0';
+  setTimeout(() => {
+    pantalla.style.display = 'none';
+  }, 1000);
+}
+</script>
+<script>
+  function crearBurbuja() {
+    const burbuja = document.createElement('div');
+    burbuja.className = 'burbuja-agua';
+    burbuja.style.left = Math.random() * 100 + '%';
+    burbuja.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    document.getElementById('burbujas-container').appendChild(burbuja);
+    setTimeout(() => burbuja.remove(), 4000);
+  }
+  setInterval(crearBurbuja, 500);
+</script>
+</body>
+</html>
